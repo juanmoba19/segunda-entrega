@@ -29,14 +29,27 @@ app.get('/ver-Cursos', (req, res) => {
 }),
 
 app.post('/guardar-curso', (req, res) => {
-    console.log(req.body);
     res.render('ver-cursos', {
         id: req.body.id,
         nombre: req.body.nombre,
-        modalidad: req.body.modalidad || '-',
+        modalidad: req.body.modalidad == '- Seleccionar -' ? '-' : req.body.modalidad,
         valor: req.body.valor,
         descripcion: req.body.descripcion,
         intensidad: req.body.intensidad || '-'
+    });
+});
+
+app.get('/inscribir', (req, res) => {
+    res.render('inscribir');
+});
+
+app.post('/inscribir', (req, res) => {
+    res.render('inscribir', {
+        id: req.body.id,
+        email: req.body.email,
+        nombre: req.body.nombre,
+        telefono: req.body.telefono,
+        curso: req.body.curso
     });
 });
 
