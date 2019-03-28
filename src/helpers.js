@@ -46,17 +46,17 @@ const guardar = () => {
     });
 };
 
-const guardarEstudiantes = async () => {
+const guardarEstudiantes = async() => {
     return new Promise(function(resolve, reject) {
         let datos = JSON.stringify(listaCursosEstudiante);
         fs.writeFile(directorioSrc + '/listado-cursos-estudiante.json', datos, (error) => {
             if (error) {
                 reject(false);
-            }  else {
+            } else {
                 console.log('Se ha creado el archivo de usuarios y cursos con exito');
                 resolve(true);
             }
-            
+
         });
     });
 };
@@ -145,19 +145,19 @@ const mostrarCursos = () => {
 };
 
 hbs.registerHelper('inscribirCurso', (id, email, nombre, telefono, curso) => {
-    if(!id && !email) {
+    if (!id && !email) {
         return mostrarFormInscribir();
     } else {
-        return  inscribirCursoEstudiante({
-            id: id, 
-            email: email, 
-            nombre: nombre, 
+        return inscribirCursoEstudiante({
+            id: id,
+            email: email,
+            nombre: nombre,
             telefono: telefono,
             curso: curso
         });
     }
 
-    
+
 });
 
 const inscribirCursoEstudiante = (inscripcion) => {
@@ -167,14 +167,14 @@ const inscribirCursoEstudiante = (inscripcion) => {
     if (!duplicado) {
         listaCursosEstudiante.push(inscripcion);
         let result = guardarEstudiantes();
-        if(result) {
+        if (result) {
             texto = '<div class="alert alert-success" role="alert"> \
-                        El aspirante ' + inscripcion.nombre + ' se ha inscrito correctamente al curso ' + inscripcion.curso + '\
+                        El aspirante ' + inscripcion.nombre + ' se ha inscrito correctamente al curso con id ' + inscripcion.curso + '\
                      </div>';
         } else {
             texto = '<div class="alert alert-danger" role="alert"> \
                      Error en la inscripcion del aspirante \
-                </div>'; 
+                </div>';
         }
     } else {
         texto = '<div class="alert alert-danger" role="alert"> \
@@ -213,14 +213,94 @@ const mostrarFormInscribir = () => {
                                 <label for="inputCurso">Cursos disponibles</label> \
                                 <select name="curso" id="inputCurso" class="form-control"> \
                                     <option selected>- Seleccionar -</option>';
-        listaCursos.forEach(curso => {
-            texto = texto +
-                '<option>' + curso.nombre + '</option>';
-        });
-        texto = texto +  '</select> \
+    listaCursos.forEach(curso => {
+        texto = texto +
+            '<option value="' + curso.id + '">' + curso.nombre + '</option>';
+    });
+    texto = texto + '</select> \
                             </div> \
                         </div> \
                         <button type="submit" class="btn btn-primary">Guardar</button> \
                     </form>';
     return texto;
 };
+
+hbs.registerHelper('verInscritosCursos', () => {
+    listarCursos();
+    listarCursosEstudiante();
+    let texto = '<div class="accordion" id="accordionExample">';
+    let index = 0;
+    let collapse = true;
+    let classShow = '';
+    listaCursos.forEach(curso => {
+        collapse = index != 0 ? false : true;
+        classShow = index != 0 ? '' : 'show';
+        texto = texto +
+            '<div class="card"> \
+            <div class="card-header" id="heading' + index + '"> \
+            <h2 class="mb-0"> \
+                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse' + index + '" aria-expanded="' + collapse + '" aria-controls="collapse' + index + '">' +
+            'Nombre del curso ' + curso.nombre + '</br> \
+            </button> \
+            <form action="/cambiar-estado" method="POST" style="display: -webkit-inline-box;"> \
+                <button  name="idCurso" type="submit" class="btn btn-outline-secondary" value="' + curso.id + '">Cambiar Estado Curso</button> \
+            </form> \
+            </h2> \
+            </div> \
+            <div id="collapse' + index + '" class="collapse ' + classShow + '" aria-labelledby="heading' + index + '" data-parent="#accordionExample"> \
+            <div class="card-body"> \
+            <table class="table table-striped"> \
+            <thead> \
+            <tr> \
+            <th scope="col"> Documento </th> \
+            <th scope="col"> Nombre </th> \
+            <th scope="col"> Correo </th> \
+            <th scope="col"> Telefono </th> \
+            </tr> \
+            </thead> \
+            <tbody>';
+        let estudCurso = listaCursosEstudiante.filter(est => est.curso == curso.id);
+        estudCurso.forEach(estCur => {
+            texto = texto +
+                '<tr>' +
+                '<th scope="row">' + estCur.id + '</th>' +
+                '<td>' + estCur.nombre + '</td>' +
+                '<td>' + estCur.email + '</td>' +
+                '<td>' + estCur.telefono + '</td></tr>';
+        });
+        texto = texto + '</tbody></table> \
+            </div> \
+            </div> \
+        </div>';
+        index++;
+    });
+    texto = texto + '</div>'
+    return texto;
+});
+
+const cambiarEstadoCurso = (idCurso) => {
+    listarCursos();
+    let curso = listaCursos.find(elem => elem.id == idCurso);
+    if (curso) {
+        let estado = curso.estado == 'Disponible' ? 'Cerrado' : 'Disponible'
+        curso.estado = estado;
+        guardar();
+    } else {
+        console.log('No existe el curso');
+    }
+};
+
+const eliminarCurso = (idCurso) => {
+    listar();
+    let nuevo = listaEstudiantes.filter(est => est.nombre != nombre);
+    if (nuevo.length == listaEstudiantes.length) {
+        console.log('Ningun estudiante tiene el nombre ' + nombre);
+    } else {
+        listaEstudiantes = nuevo;
+        guardar();
+    }
+};
+
+module.exports = {
+    cambiarEstadoCurso
+}
