@@ -6,11 +6,8 @@ let listaCursosEstudiante = [];
 
 const listarCursos = () => {
     try {
-        let file = fs.readFileSync('./src/listado-cursos.json', 'utf8');
-        console.log("Listar es de tipo: " + typeof JSON.parse(file));
-        return listaCursos = JSON.parse(file);
+        return listaCursos = require('./listado-cursos.json');
     } catch (err) {
-        console.log(err);
         return listaCursos = [];
     }
 };
@@ -26,12 +23,7 @@ const listarCursosEstudiante = () => {
 };
 
 const crearCurso = (curso) => {
-    let file = fs.readFileSync('./src/listado-cursos.json', 'utf8');
-    console.log("Ete es file" + file + ' y el tipo es ' + typeof file );
-    console.log("Es json stringy " + JSON.stringify(file) + "Y es del tipo " + typeof JSON.stringify(file));
-    let str = JSON.stringify(file);
-    console.log("Con parseÑ " + JSON.parse(str) + "Y es del tipo " + typeof JSON.parse(str));
-    listaCursos = JSON.parse(file.toString());
+    listarCursos();
     let duplicado = listaCursos.find(elem => elem.id == curso.id);
     if (!duplicado) {
         listaCursos.push(curso);
@@ -170,6 +162,7 @@ const mostrarCursosEst = () => {
     let index = 0;
     let collapse = true;
     let classShow = '';
+    listaCursos = listaCursos.filter(curso => curso.estado != 'Cerrado');
     listaCursos.forEach(curso => {
         collapse = index != 0 ? false : true;
         classShow = index != 0 ? '' : 'show';
