@@ -3,6 +3,7 @@ const app = express();
 const path = require('path');
 const hbs = require('hbs');
 const bodyParser = require('body-parser');
+const port = process.env.PORT || 3000;
 require('./helpers')
 const { cambiarEstadoCurso, eliminarEstudianteCurso } = require('./funciones');
 const directoriopublico = path.join(__dirname, '../public');
@@ -69,6 +70,6 @@ app.post('/cambiar-estado', (req, res) => {
     res.render('ver-cursos');
 });
 
-app.listen(3000, () => {
-    console.log('Escuchando puerto 3000');
+app.listen(port, () => {
+    console.log('Escuchando puerto ' + port);
 });
